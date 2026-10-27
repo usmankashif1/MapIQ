@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { type LatLng, type Region } from 'react-native-maps';
 import Crosshair from '../components/Crosshair';
 import MeasureHeader from '../components/MeasureHeader';
 import MeasureMap from '../components/MeasureMap';
 import MeasureToolbar from '../components/MeasureToolbar';
+import type { MapCoordinate, MapRegion, MeasureMapHandle } from '../components/mapTypes';
 import {
   describeMeasurement,
   measurePath,
@@ -17,13 +17,13 @@ import { useOutlineEditor } from '../hooks/useOutlineEditor';
 export type { MeasurementResult } from '../components/measurement';
 
 export type MeasurementScreenProps = {
-  initialRegion?: Region;
+  initialRegion?: MapRegion;
   /** Called whenever the committed outline changes. */
   onMeasurementChange?: (result: MeasurementResult) => void;
 };
 
 // Placeholder start position. Pass `initialRegion` (e.g. the job address) to override it.
-const DEFAULT_REGION: Region = {
+const DEFAULT_REGION: MapRegion = {
   // latitude: 28.40346579052557,
   // longitude: 70.3113253971184,
   latitude: 37.78825,
@@ -47,8 +47,8 @@ export default function HomeScreen({
   initialRegion = DEFAULT_REGION,
   onMeasurementChange,
 }: MeasurementScreenProps) {
-  const mapRef = useRef<MapView>(null);
-  const centerRef = useRef<LatLng>({
+  const mapRef = useRef<MeasureMapHandle>(null);
+  const centerRef = useRef<MapCoordinate>({
     latitude: initialRegion.latitude,
     longitude: initialRegion.longitude,
   });
@@ -91,7 +91,7 @@ export default function HomeScreen({
 
   /* ----- crosshair position ----- */
 
-  const handleRegionChangeComplete = useCallback((region: Region) => {
+  const handleRegionChangeComplete = useCallback((region: MapRegion) => {
     centerRef.current = { latitude: region.latitude, longitude: region.longitude };
   }, []);
 
@@ -101,11 +101,11 @@ export default function HomeScreen({
    * taps while the map is still coasting after a fling, the native camera knows the true
    * centre at this instant, so it is asked first and the ref is the fallback.
    */
-  const readCrosshair = useCallback(async (): Promise<LatLng> => {
+  const readCrosshair = useCallback(async (): Promise<MapCoordinate> => {
     try {
-      const camera = await mapRef.current?.getCamera();
-      if (camera?.center) {
-        return { latitude: camera.center.latitude, longitude: camera.center.longitude };
+      const center = await mapRef.current?.getCenter();
+      if (center) {
+        return center;
       }
     } catch {
       // fall through to the last reported centre
@@ -176,7 +176,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000'
   },
 });
-
 
 
 

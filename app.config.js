@@ -22,7 +22,13 @@ export default {
       package: "com.usmankashif.MyApp"
     },
     web: {
-      favicon: "./assets/favicon.png"
+      favicon: "./assets/favicon.png",
+      bundler: "metro",
+      name: "MyApp",
+      shortName: "MyApp",
+      display: "standalone",
+      themeColor: "#000000",
+      backgroundColor: "#000000"
     },
     plugins: [
       "expo-secure-store",
@@ -33,6 +39,9 @@ export default {
           androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
         }
       ]
-    ]
+    ],
+    extra: {
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
+    }
   }
 };

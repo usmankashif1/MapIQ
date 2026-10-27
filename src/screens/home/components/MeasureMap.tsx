@@ -1,7 +1,8 @@
-import React, { forwardRef, memo, useMemo } from 'react';
+import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import MapView, { Polygon, Polyline, PROVIDER_GOOGLE, type LatLng, type Region } from 'react-native-maps';
+import MapView, { Polygon, Polyline, PROVIDER_GOOGLE, type LatLng } from 'react-native-maps';
 import type { Vertex } from '../hooks/outlineReducer';
+import type { MapRegion, MeasureMapHandle } from './mapTypes';
 import { COLORS } from './measureTheme';
 import VertexMarker from './VertexMarker';
 
@@ -9,12 +10,12 @@ import VertexMarker from './VertexMarker';
 const MAX_ZOOM_LEVEL = 21;
 
 type Props = {
-  initialRegion: Region;
+  initialRegion: MapRegion;
   vertices: readonly Vertex[];
   selectedId: number | null;
   selfIntersecting: boolean;
   onSelectVertex: (id: number) => void;
-  onRegionChangeComplete: (region: Region) => void;
+  onRegionChangeComplete: (region: MapRegion) => void;
 };
 
 /**
@@ -24,10 +25,21 @@ type Props = {
  * There is intentionally no `onPress` / `onLongPress` here: a point is only ever added
  * from the crosshair.
  */
-const MeasureMap = forwardRef<MapView, Props>(function MeasureMap(
+const MeasureMap = forwardRef<MeasureMapHandle, Props>(function MeasureMap(
   { initialRegion, vertices, selectedId, selfIntersecting, onSelectVertex, onRegionChangeComplete },
   ref,
 ) {
+  const mapRef = useRef<MapView>(null);
+
+  useImperativeHandle(ref, () => ({
+    getCenter: async () => {
+      const camera = await mapRef.current?.getCamera();
+      return camera?.center
+        ? { latitude: camera.center.latitude, longitude: camera.center.longitude }
+        : null;
+    },
+  }), []);
+
   // Strip the ids so only plain coordinates cross the bridge.
   const outline = useMemo<LatLng[]>(
     () => vertices.map(({ latitude, longitude }) => ({ latitude, longitude })),
@@ -39,7 +51,7 @@ const MeasureMap = forwardRef<MapView, Props>(function MeasureMap(
 
   return (
     <MapView
-      ref={ref}
+      ref={mapRef}
       provider={PROVIDER_GOOGLE}
       style={StyleSheet.absoluteFill}
       mapType="satellite"
@@ -51,7 +63,14 @@ const MeasureMap = forwardRef<MapView, Props>(function MeasureMap(
       showsCompass={false}
       moveOnMarkerPress={false}
       loadingEnabled
-      onRegionChangeComplete={onRegionChangeComplete}
+      onRegionChangeComplete={region =>
+        onRegionChangeComplete({
+          latitude: region.latitude,
+          longitude: region.longitude,
+          latitudeDelta: region.latitudeDelta,
+          longitudeDelta: region.longitudeDelta,
+        })
+      }
     >
       {outline.length >= 3 && (
         <Polygon coordinates={outline} fillColor={fill} strokeColor={stroke} strokeWidth={2} />
