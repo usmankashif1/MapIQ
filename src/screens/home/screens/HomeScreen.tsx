@@ -165,14 +165,15 @@ export default function HomeScreen({
         onDelete={removeSelected}
         onDeselect={deselect}
       />
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { 
-    flex: 1, 
-    backgroundColor: '#000000' 
+  root: {
+    flex: 1,
+    backgroundColor: '#000000'
   },
 });
 
