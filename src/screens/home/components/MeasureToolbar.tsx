@@ -9,6 +9,7 @@ type Props = {
   /** 1-based number of the selected point, or null when nothing is selected. */
   selectedNumber: number | null;
   onAddPoint: () => void;
+  onGenerateQuote: () => void;
   onMoveHere: () => void;
   onDelete: () => void;
   onDeselect: () => void;
@@ -51,8 +52,16 @@ function ActionButton({ label, accessibilityLabel, tone, onPress }: ActionButton
   );
 }
 
-/** Floating dock at the bottom: edit actions for the selected point, plus "Add point". */
-function MeasureToolbar({ pointCount, selectedNumber, onAddPoint, onMoveHere, onDelete, onDeselect }: Props) {
+/** Floating map dock for point editing, adding points, and starting a quote. */
+function MeasureToolbar({
+  pointCount,
+  selectedNumber,
+  onAddPoint,
+  onGenerateQuote,
+  onMoveHere,
+  onDelete,
+  onDeselect,
+}: Props) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -96,6 +105,19 @@ function MeasureToolbar({ pointCount, selectedNumber, onAddPoint, onMoveHere, on
         >
           <Icon paths={ICONS.plus} color="#FFFFFF" />
           <Text style={styles.addButtonText}>Add point</Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Generate quote"
+          onPress={onGenerateQuote}
+          style={({ pressed }) => [
+            styles.generateQuoteButton,
+            pressed && styles.addButtonPressed,
+          ]}
+        >
+          <Text style={styles.generateQuoteButtonText}>Generate Quote</Text>
+          <Icon paths={ICONS.arrowRight} color="#FFFFFF" size={20} />
         </Pressable>
       </View>
     </View>
@@ -150,4 +172,14 @@ const styles = StyleSheet.create({
   },
   addButtonPressed: { opacity: 0.85 },
   addButtonText: { fontSize: 17, fontWeight: '600', color: '#FFFFFF' },
+  generateQuoteButton: {
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: '#F56600',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  generateQuoteButtonText: { fontSize: 17, fontWeight: '600', color: '#FFFFFF' },
 });

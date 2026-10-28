@@ -8,6 +8,7 @@ import type { MapCoordinate, MapRegion, MeasureMapHandle } from '../components/m
 import {
   describeMeasurement,
   measurePath,
+  SQFT_PER_SQM,
   toMeasurementResult,
   type MeasurementResult,
   type UnitSystem,
@@ -20,12 +21,12 @@ export type MeasurementScreenProps = {
   initialRegion?: MapRegion;
   /** Called whenever the committed outline changes. */
   onMeasurementChange?: (result: MeasurementResult) => void;
+  onGenerateQuote?: (areaSqFt: number) => void;
 };
 
-// Placeholder start position. Pass `initialRegion` (e.g. the job address) to override it.
+// Placeholder start position. Pass `initialRegion` (for example, the job address)
+// to override it.
 const DEFAULT_REGION: MapRegion = {
-  // latitude: 28.40346579052557,
-  // longitude: 70.3113253971184,
   latitude: 37.78825,
   longitude: -122.4324,
   latitudeDelta: 0.005,
@@ -46,6 +47,7 @@ const DEFAULT_REGION: MapRegion = {
 export default function HomeScreen({
   initialRegion = DEFAULT_REGION,
   onMeasurementChange,
+  onGenerateQuote,
 }: MeasurementScreenProps) {
   const mapRef = useRef<MeasureMapHandle>(null);
   const centerRef = useRef<MapCoordinate>({
@@ -128,6 +130,10 @@ export default function HomeScreen({
     [],
   );
 
+  const handleGenerateQuote = useCallback(() => {
+    onGenerateQuote?.(Math.round(measurement.areaM2 * SQFT_PER_SQM));
+  }, [measurement.areaM2, onGenerateQuote]);
+
   return (
     <View style={styles.root}>
       <MeasureMap
@@ -161,6 +167,7 @@ export default function HomeScreen({
         pointCount={vertices.length}
         selectedNumber={selectedIndex >= 0 ? selectedIndex + 1 : null}
         onAddPoint={handleAddPoint}
+        onGenerateQuote={handleGenerateQuote}
         onMoveHere={handleMoveHere}
         onDelete={removeSelected}
         onDeselect={deselect}
@@ -176,9 +183,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000'
   },
 });
-
-
-
 
 
 

@@ -6,9 +6,14 @@ import Screen from '../../components/Screen';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import { getToken } from '../../core/utils/tokenStorage';
 import { setToken } from '../../store/slices/authSlice';
+import { replaceQuotes } from '../../store/slices/quotesSlice';
+import { replaceInvoices } from '../../store/slices/invoicesSlice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import AuthNavigator from '../auth/AuthNavigator';
 import StackNavigator from '../main/Stack/StackNavigator';
+import { getSavedQuotes } from '../../screens/home/utils/quoteStorage';
+import { getSavedInvoices } from '../../screens/home/utils/invoiceStorage';
+import { showErrorToast } from '../../core/utils/toast';
 
 export type RootStackParamList = {
     Auth: undefined;
@@ -23,7 +28,36 @@ const RootNavigator = () => {
 
     useEffect(() => {
         const restoreSession = async () => {
-            const storedToken = await getToken();
+            let storedToken: string | null = null;
+            try {
+                storedToken = await getToken();
+            } catch (error) {
+                showErrorToast(
+                    'Unable to restore session',
+                    error instanceof Error ? error.message : 'Please try again.',
+                );
+            }
+
+            try {
+                dispatch(replaceQuotes(await getSavedQuotes()));
+            } catch (error) {
+                showErrorToast(
+                    'Unable to load saved quotes',
+                    error instanceof Error ? error.message : 'Please try again.',
+                );
+                dispatch(replaceQuotes([]));
+            }
+
+            try {
+                dispatch(replaceInvoices(await getSavedInvoices()));
+            } catch (error) {
+                showErrorToast(
+                    'Unable to load saved invoices',
+                    error instanceof Error ? error.message : 'Please try again.',
+                );
+                dispatch(replaceInvoices([]));
+            }
+
             dispatch(setToken(storedToken));
         };
         restoreSession();

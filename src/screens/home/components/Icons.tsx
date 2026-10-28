@@ -14,6 +14,7 @@ export const ICONS = {
     'M14 11v6',
   ],
   plus: ['M12 5v14', 'M5 12h14'],
+  arrowRight: ['M5 12h14', 'm12 5 7 7-7 7'],
   close: ['M18 6 6 18', 'm6 6 12 12'],
 } as const;
 

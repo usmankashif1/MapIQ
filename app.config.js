@@ -1,5 +1,7 @@
 import 'dotenv/config';
 
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+
 export default {
   expo: {
     name: "MyApp",
@@ -9,7 +11,8 @@ export default {
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: "com.usmankashif.MyApp"
     },
     android: {
       adaptiveIcon: {
@@ -32,16 +35,18 @@ export default {
     },
     plugins: [
       "expo-secure-store",
+      "expo-sharing",
       "expo-status-bar",
       [
         "react-native-maps",
         {
-          androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
+          androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY || googleMapsApiKey,
+          iosGoogleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY || googleMapsApiKey
         }
       ]
     ],
     extra: {
-      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
+      googleMapsApiKey: process.env.GOOGLE_MAPS_WEB_API_KEY || googleMapsApiKey
     }
   }
 };
